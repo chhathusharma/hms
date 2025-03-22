@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - GN Hospital</title>
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-hospital"></i> GN Hospital
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('about') }}">
+                            <i class="fas fa-info-circle"></i> About
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="text-center mb-0">Welcome to GN Hospital</h3>
+                    </div>
+                    <div class="card-body">
+                        {% with messages = get_flashed_messages() %}
+                            {% if messages %}
+                                {% for message in messages %}
+                                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <div class="row">
+                            <div class="col-md-6 border-end">
+                                <h4 class="text-center mb-4">Login</h4>
+                                <form method="POST" action="{{ url_for('login') }}">
+                                    <div class="mb-3">
+                                        <label for="username" class="form-label">Username</label>
+                                        <input type="text" class="form-control" id="username" name="username" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="password" class="form-label">Password</label>
+                                        <input type="password" class="form-control" id="password" name="password" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="role" class="form-label">Login As</label>
+                                        <select class="form-select" id="role" name="role" required>
+                                            <option value="">Select Role</option>
+                                            <option value="admin">Administrator</option>
+                                            <option value="doctor">Doctor</option>
+                                            <option value="patient">Patient</option>
+                                        </select>
+                                    </div>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-sign-in-alt"></i> Login
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="col-md-6">
+                                <h4 class="text-center mb-4">Quick Links</h4>
+                                <div class="d-grid gap-3">
+                                    <a href="{{ url_for('patient_register') }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-user-plus"></i> New Patient Registration
+                                    </a>
+                                    <div class="text-center">
+                                        <h5 class="mt-4 mb-3">Portal Features</h5>
+                                        <div class="row g-3">
+                                            <div class="col-6">
+                                                <div class="p-3 border rounded text-center">
+                                                    <i class="fas fa-calendar-check fa-2x text-primary mb-2"></i>
+                                                    <p class="mb-0">Book Appointments</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="p-3 border rounded text-center">
+                                                    <i class="fas fa-file-medical fa-2x text-primary mb-2"></i>
+                                                    <p class="mb-0">View Reports</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="p-3 border rounded text-center">
+                                                    <i class="fas fa-user-md fa-2x text-primary mb-2"></i>
+                                                    <p class="mb-0">Doctor Portal</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="p-3 border rounded text-center">
+                                                    <i class="fas fa-hospital-user fa-2x text-primary mb-2"></i>
+                                                    <p class="mb-0">Patient Portal</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html>

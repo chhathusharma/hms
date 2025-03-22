@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-file-medical"></i> Blood Report Details
+            </h5>
+            <a href="{{ url_for('patient_dashboard', patient_id=report.patient_id) if current_user.is_admin() else url_for('patient_dashboard') }}" class="btn btn-light">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-muted">Report Information</h6>
+                    <hr>
+                    <p><strong><i class="fas fa-calendar"></i> Date:</strong> {{ report.date.strftime('%B %d, %Y') }}</p>
+                    <p><strong><i class="fas fa-user-md"></i> Doctor:</strong> Dr. {{ report.doctor.name }}</p>
+                    <p><strong><i class="fas fa-user"></i> Patient:</strong> {{ report.patient.name }}</p>
+                    <p>
+                        <strong><i class="fas fa-check-circle"></i> Status:</strong>
+                        <span class="badge bg-{{ 'success' if report.status == 'completed' else 'warning' }}">
+                            {{ report.status|title }}
+                        </span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted">Test Results</h6>
+                    <hr>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Test</th>
+                                    <th>Result</th>
+                                    <th>Normal Range</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for test in report.tests %}
+                                <tr>
+                                    <td>{{ test.name }}</td>
+                                    <td>{{ test.result }} {{ test.unit }}</td>
+                                    <td>{{ test.normal_range }}</td>
+                                    <td>
+                                        {% if test.status == 'normal' %}
+                                        <span class="badge bg-success">Normal</span>
+                                        {% elif test.status == 'high' %}
+                                        <span class="badge bg-danger">High</span>
+                                        {% elif test.status == 'low' %}
+                                        <span class="badge bg-warning">Low</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {% if report.notes %}
+            <div class="mt-4">
+                <h6 class="text-muted">Doctor's Notes</h6>
+                <hr>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        {{ report.notes|replace('\n', '<br>')|safe }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

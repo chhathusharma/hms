@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Book Appointment with Dr. {{ doctor.name }}</h4>
+                    <p class="text-muted mb-0">{{ doctor.specialization }}</p>
+                    <p class="text-muted mb-0">Visit Charge: ₹{{ "%.2f"|format(doctor.visit_charge) }}</p>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('book_appointment') }}" method="POST">
+                        <input type="hidden" name="doctor_id" value="{{ doctor.id }}">
+                        
+                        <div class="mb-3">
+                            <label for="date" class="form-label">Appointment Date</label>
+                            <input type="date" class="form-control" id="date" name="date" required min="{{ today }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="time_slot" class="form-label">Available Time Slots</label>
+                            <select class="form-select" id="time_slot" name="time_slot" required>
+                                <option value="">Select Time Slot</option>
+                            </select>
+                            <div class="form-text text-muted mt-2">
+                                <i class="fas fa-info-circle"></i> 
+                                Available slots are shown based on the selected date
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="reason" class="form-label">Reason for Visit</label>
+                            <textarea class="form-control" id="reason" name="reason" rows="3" required 
+                                    placeholder="Please describe your symptoms or reason for visit"></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Book Appointment</button>
+                            <a href="{{ url_for('patient_dashboard') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const dateInput = document.getElementById('date');
+    const timeSlotSelect = document.getElementById('time_slot');
+    
+    // Set minimum date to today
+    dateInput.min = new Date().toISOString().split('T')[0];
+    
+    // Function to load available time slots
+    function loadAvailableSlots() {
+        const selectedDate = dateInput.value;
+        if (!selectedDate) return;
+        
+        // Clear current options
+        timeSlotSelect.innerHTML = '<option value="">Loading available slots...</option>';
+        
+        // Fetch available slots from server
+        fetch(`/get_available_slots?doctor_id={{ doctor.id }}&date=${selectedDate}`)
+            .then(response => response.json())
+            .then(data => {
+                timeSlotSelect.innerHTML = '<option value="">Select Time Slot</option>';
+                
+                if (data.slots && data.slots.length > 0) {
+                    data.slots.forEach(slot => {
+                        const option = document.createElement('option');
+                        option.value = slot;
+                        option.textContent = slot.replace('-', ' to ');
+                        timeSlotSelect.appendChild(option);
+                    });
+                } else {
+                    timeSlotSelect.innerHTML = '<option value="">No available slots</option>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                timeSlotSelect.innerHTML = '<option value="">Error loading slots</option>';
+            });
+    }
+    
+    // Load available slots when date changes
+    dateInput.addEventListener('change', loadAvailableSlots);
+</script>
+{% endblock %}

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - Hospital Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#"><i class="fas fa-hospital"></i> GN Hospital</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('doctor_dashboard') }}">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('doctor_appointments') }}">
+                            <i class="fas fa-calendar-check"></i> Appointments
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('doctor_blood_reports') }}">
+                            <i class="fas fa-vial"></i> Blood Reports
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-user-md"></i> Doctor Profile</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong><i class="fas fa-user"></i> Name:</strong> Dr. {{ doctor.name }}</p>
+                        <p><strong><i class="fas fa-stethoscope"></i> Specialization:</strong> {{ doctor.specialization }}</p>
+                        <p><strong><i class="fas fa-envelope"></i> Email:</strong> {{ doctor.email }}</p>
+                        <p><strong><i class="fas fa-phone"></i> Phone:</strong> {{ doctor.phone }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8 mb-4">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-calendar-day"></i> Today's Appointments</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Patient</th>
+                                        <th>Reason</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in todays_appointments %}
+                                    <tr>
+                                        <td>{{ appointment.date.strftime('%I:%M %p') }}</td>
+                                        <td>{{ appointment.patient.name }}</td>
+                                        <td>{{ appointment.reason }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if appointment.status == 'confirmed' else 'warning' }}">
+                                                {{ appointment.status | title }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#updateAppointment{{ appointment.id }}">
+                                                <i class="fas fa-edit"></i> Update
+                                            </button>
+                                            {% if appointment.status == 'confirmed' %}
+                                            <a href="{{ url_for('generate_blood_report', patient_id=appointment.patient.id) }}" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-vial"></i> Blood Report
+                                            </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+
+                                    <!-- Update Appointment Modal -->
+                                    <div class="modal fade" id="updateAppointment{{ appointment.id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-primary text-white">
+                                                    <h5 class="modal-title">Update Appointment</h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form action="{{ url_for('update_appointment', id=appointment.id) }}" method="POST">
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Status</label>
+                                                            <select class="form-select" name="status" required>
+                                                                <option value="pending" {% if appointment.status == 'pending' %}selected{% endif %}>Pending</option>
+                                                                <option value="confirmed" {% if appointment.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                                                                <option value="completed" {% if appointment.status == 'completed' %}selected{% endif %}>Completed</option>
+                                                                <option value="cancelled" {% if appointment.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Notes</label>
+                                                            <textarea class="form-control" name="notes" rows="3">{{ appointment.notes or '' }}</textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">No appointments scheduled for today</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12 mb-4">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0"><i class="fas fa-vial"></i> Pending Blood Reports</h5>
+                        <a href="{{ url_for('doctor_blood_reports') }}" class="btn btn-light btn-sm">
+                            <i class="fas fa-list"></i> View All Reports
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Patient Name</th>
+                                        <th>Hemoglobin</th>
+                                        <th>WBC Count</th>
+                                        <th>RBC Count</th>
+                                        <th>Platelets</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for report in pending_blood_reports %}
+                                    <tr>
+                                        <td>{{ report.date.strftime('%Y-%m-%d') }}</td>
+                                        <td>{{ report.patient.name }}</td>
+                                        <td>{{ report.hemoglobin if report.hemoglobin else 'Pending' }}</td>
+                                        <td>{{ report.wbc_count if report.wbc_count else 'Pending' }}</td>
+                                        <td>{{ report.rbc_count if report.rbc_count else 'Pending' }}</td>
+                                        <td>{{ report.platelets if report.platelets else 'Pending' }}</td>
+                                        <td>
+                                            <a href="{{ url_for('generate_blood_report', patient_id=report.patient_id) }}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-edit"></i> Update
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% if not pending_blood_reports %}
+                            <div class="text-center mt-3">
+                                <p class="text-muted">No pending blood reports</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html>

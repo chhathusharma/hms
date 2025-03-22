@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0"><i class="fas fa-vial"></i> Blood Reports</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Date</th>
+                            <th>Patient Name</th>
+                            <th>Hemoglobin<br><small class="text-muted">(12.0-15.5 g/dL)</small></th>
+                            <th>WBC Count<br><small class="text-muted">(4,500-11,000 /µL)</small></th>
+                            <th>RBC Count<br><small class="text-muted">(4.5-5.9 M/µL)</small></th>
+                            <th>Platelets<br><small class="text-muted">(150,000-450,000 /µL)</small></th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in reports|sort(attribute='date', reverse=true) %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ report.date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ report.patient.name }}</td>
+                            <td>
+                                {% if report.hemoglobin %}
+                                    <span class="{% if report.hemoglobin >= 12.0 and report.hemoglobin <= 15.5 %}text-success{% else %}text-danger{% endif %}">
+                                        {{ "%.1f"|format(report.hemoglobin) }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if report.wbc_count %}
+                                    <span class="{% if report.wbc_count >= 4500 and report.wbc_count <= 11000 %}text-success{% else %}text-danger{% endif %}">
+                                        {{ report.wbc_count|int|string|replace(',', '') }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if report.rbc_count %}
+                                    <span class="{% if report.rbc_count >= 4.5 and report.rbc_count <= 5.9 %}text-success{% else %}text-danger{% endif %}">
+                                        {{ "%.1f"|format(report.rbc_count) }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if report.platelets %}
+                                    <span class="{% if report.platelets >= 150000 and report.platelets <= 450000 %}text-success{% else %}text-danger{% endif %}">
+                                        {{ report.platelets|int|string|replace(',', '') }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge {% if report.status == 'completed' %}bg-success{% else %}bg-warning{% endif %}">
+                                    {{ report.status|title }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if report.status == 'pending' %}
+                                    <a href="{{ url_for('generate_blood_report', patient_id=report.patient_id) }}" class="btn btn-primary btn-sm mb-1">
+                                        <i class="fas fa-edit"></i> Update
+                                    </a>
+                                {% endif %}
+                                <a href="{{ url_for('download_report', report_id=report.id) }}" class="btn btn-info btn-sm mb-1">
+                                    <i class="fas fa-download"></i> Download
+                                </a>
+                                <form action="{{ url_for('delete_blood_report', report_id=report.id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this blood report? This action cannot be undone.');">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if not reports %}
+                <div class="text-center mt-3">
+                    <p class="text-muted">No blood reports found</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
