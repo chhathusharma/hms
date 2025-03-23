@@ -12,6 +12,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from sqlalchemy import func
+import os
 
 # Ensure instance directory exists
 if not os.path.exists('instance'):
