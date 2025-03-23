@@ -27,12 +27,6 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-# Initialize database
-with app.app_context():
-    db.create_all()
-    # Create test accounts if needed
-    setup_test_accounts()
-
 # Models
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -1370,6 +1364,17 @@ def get_available_slots():
         return jsonify({'slots': available_slots})
     except ValueError:
         return jsonify({'error': 'Invalid date format'}), 400
+
+# Initialize database
+with app.app_context():
+    try:
+        db.create_all()
+        try:
+            setup_test_accounts()  # Create test accounts
+        except Exception as e:
+            print(f"Warning: Could not create test accounts: {e}")
+    except Exception as e:
+        print(f"Error: Could not initialize database: {e}")
 
 if __name__ == '__main__':
     app.run(debug=True)
