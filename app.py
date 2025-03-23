@@ -56,7 +56,7 @@ class Doctor(db.Model):
     specialization = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     phone = db.Column(db.String(20), nullable=False)
-    visit_charge = db.Column(db.Float, nullable=False, default=0.0)
+    visit_charge = db.Column(db.Float, nullable=True, default=0.0, server_default='0.0')
     user = db.relationship('User', backref=db.backref('doctor', uselist=False))
 
 class Patient(db.Model):
@@ -1368,6 +1368,7 @@ def get_available_slots():
 # Initialize database
 with app.app_context():
     try:
+        db.drop_all()
         db.create_all()
         try:
             setup_test_accounts()  # Create test accounts
